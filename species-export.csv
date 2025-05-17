@@ -1,0 +1,18 @@
+species_id,scientific_name,family,taxon,songtype_id,songtype
+8369,Lamprotornis superbus,Sturnidae,Birds,1,Common Song
+3873,Tockus flavirostris,Bucerotidae,Birds,9,Nocturnal Song
+2048,Turtur chalcospilos,Columbidae,Birds,1,Common Song
+286,Francolinus sephaena,Phasianidae,Birds,1,Common Song
+204,Acryllium vulturinum,Numididae,Birds,1,Common Song
+17757,Pristimantis kelephus,Craugastoridae,Amphibians,4,Simple Call
+47296,Rattus norvegicus,Muridae,Mammals,4,Simple Call
+46464,Papio anubis,Cercopithecidae,Mammals,4,Simple Call
+46459,Panthera pardus,Felidae,Mammals,4,Simple Call
+46457,Panthera leo,Felidae,Mammals,4,Simple Call
+44947,Loxodonta africana,Elephantidae,Mammals,8,Mechanical Song
+44947,Loxodonta africana,Elephantidae,Mammals,4,Simple Call
+44947,Loxodonta africana,Elephantidae,Mammals,3,Territorial Song
+44485,Hyaena hyaena,Hyaenidae,Mammals,9,Nocturnal Song
+44485,Hyaena hyaena,Hyaenidae,Mammals,4,Simple Call
+43373,Crocuta crocuta,Hyaenidae,Mammals,4,Simple Call
+16769,sp1,Unknown,Other,4,Simple Call
