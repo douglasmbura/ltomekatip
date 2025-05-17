@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ltome-Katip Project</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/vis-network.min.css" />
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; margin: 0; }
+    header { 
+      background-color: #2c3e50; 
+      color: white; 
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-menu {
+      display: flex;
+      gap: 15px;
+    }
+    .nav-menu a {
+      color: white;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .nav-menu a:hover {
+      background-color: #34495e;
+    }
+    .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+    .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; }
+    #map, #detectionMap, #networkGraph { height: 400px; width: 100%; }
+    canvas { max-width: 100%; }
+    .export-btns { margin-top: 10px; display: flex; gap: 10px; }
+    .fullwidth { grid-column: span 2; }
+    button { padding: 6px 12px; border: none; background-color: #2c3e50; color: white; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #34495e; }
+    .network-tooltip {
+      position: absolute;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      pointer-events: none;
+      z-index: 100;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>Bioacoustic Data Dashboard</h1>
+    </div>
+    <div class="nav-menu">
+      <a href="storymap.html">Storymap</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="index.html">Main Map</a>
+    </div>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h3>Sites Map</h3>
+      <div id="map"></div>
+    </div>
+    <div class="card">
+      <h3>Recordings per Site</h3>
+      <div class="summary" id="siteSummary"></div>
+      <canvas id="allSitesChart"></canvas>
+      <div class="export-btns">
+        <button onclick="exportChart('allSitesChart')">Export PNG</button>
+        <button onclick="exportPDF('allSitesChart')">Export PDF</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Species Distribution by Taxon</h3>
+      <canvas id="taxonPieChart"></canvas>
+      <div class="export-btns">
+        <button onclick="exportChart('taxonPieChart')">Export PNG</button>
+        <button onclick="exportPDF('taxonPieChart')">Export PDF</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Taxon vs Scientific Name</h3>
+      <div id="networkGraph"></div>
+      <div class="export-btns">
+        <button onclick="exportNetworkGraph()">Export PNG</button>
+      </div>
+      <div class="network-tooltip" id="networkTooltip"></div>
+    </div>
+    <div class="card">
+      <h3>Species Song Types</h3>
+      <canvas id="songTypeBarChart"></canvas>
+      <div class="export-btns">
+        <button onclick="exportChart('songTypeBarChart')">Export PNG</button>
+        <button onclick="exportPDF('songTypeBarChart')">Export PDF</button>
+      </div>
+    </div>
+    <div class="card fullwidth">
+      <h3>Detections by Species</h3>
+      <canvas id="speciesChart"></canvas>
+      <div class="export-btns">
+        <button onclick="exportChart('speciesChart')">Export PNG</button>
+        <button onclick="exportPDF('speciesChart')">Export PDF</button>
+      </div>
+    </div>
+    <div class="card fullwidth">
+      <h3>Detections Over Time</h3>
+      <canvas id="trendChart"></canvas>
+      <div class="export-btns">
+        <button onclick="exportChart('trendChart')">Export PNG</button>
+        <button onclick="exportPDF('trendChart')">Export PDF</button>
+      </div>
+    </div>
+    <div class="card fullwidth">
+      <h3>Detection by Location</h3>
+      <div id="detectionMap"></div>
+      <div class="export-btns">
+        <button onclick="exportMap('detectionMap')">Export PNG</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize maps with ESRI satellite layer
+    const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    });
+
+    const siteMap = L.map("map").setView([1.1145, 37.4690], 10);
+    const detectionMap = L.map("detectionMap").setView([1.1145, 37.4690], 10);
+    
+    // Add standard OSM layer to sites map
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(siteMap);
+    
+    // Add ESRI satellite layer to detection map
+    esriSatellite.addTo(detectionMap);
+
+    function exportChart(canvasId) {
+      html2canvas(document.getElementById(canvasId)).then(canvas => {
+        const link = document.createElement('a');
+        link.download = canvasId + '.png';
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+
+    function exportPDF(canvasId) {
+      html2canvas(document.getElementById(canvasId)).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jspdf.jsPDF();
+        pdf.addImage(imgData, 'PNG', 10, 10, 180, 90);
+        pdf.save(canvasId + '.pdf');
+      });
+    }
+
+    function exportMap(divId) {
+      html2canvas(document.getElementById(divId)).then(canvas => {
+        const link = document.createElement('a');
+        link.download = divId + '.png';
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+
+    function exportNetworkGraph() {
+      const container = document.getElementById('networkGraph');
+      html2canvas(container).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'network-graph.png';
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+
+    function loadCSV(url) {
+      return new Promise((resolve, reject) => {
+        Papa.parse(url, {
+          download: true,
+          header: true,
+          complete: results => resolve(results.data.filter(row => Object.values(row).some(val => val !== ''))),
+          error: reject
+        });
+      });
+    }
+
+    function renderSpeciesDashboard(data) {
+      const speciesCount = {}, dateCount = {};
+      data.forEach(row => {
+        const species = row.scientific_name || "Unknown";
+        speciesCount[species] = (speciesCount[species] || 0) + 1;
+        const date = row.recording_local_time?.split(' ')[0] || "Unknown";
+        dateCount[date] = (dateCount[date] || 0) + 1;
+
+        const lat = parseFloat(row.site_latitude);
+        const lng = parseFloat(row.site_longitude);
+        const site = row.site_name || 'Unknown';
+        if (!isNaN(lat) && !isNaN(lng)) {
+          L.circleMarker([lat, lng], {
+            radius: 5,
+            color: '#e74c3c', fillOpacity: 0.8,
+            fillColor: '#3498db'
+          }).addTo(detectionMap).bindPopup(`<b>Location:</b> ${site}<br><b>Species:</b> ${species}<br><b>Date:</b> ${date}`);
+        }
+      });
+      new Chart(document.getElementById('speciesChart'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(speciesCount),
+          datasets: [{ label: 'Detections', data: Object.values(speciesCount), backgroundColor: '#3498db' }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+      new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+          labels: Object.keys(dateCount).sort(),
+          datasets: [{ label: 'Detections Over Time', data: Object.values(dateCount), borderColor: '#e74c3c', fill: false }]
+        },
+        options: { responsive: true }
+      });
+    }
+
+    function renderSiteDashboard(sites, species) {
+      sites.forEach(site => {
+        site.Latitude = parseFloat(site.Latitude);
+        site.Longitude = parseFloat(site.Longitude);
+        site.Recordings_Count = parseInt(site.Recordings_Count);
+        if (!isNaN(site.Latitude) && !isNaN(site.Longitude)) {
+          L.marker([site.Latitude, site.Longitude]).addTo(siteMap)
+            .bindPopup(`<b>${site.Name}</b><br>Recordings: ${site.Recordings_Count}`);
+        }
+      });
+      const total = sites.reduce((sum, s) => sum + (s.Recordings_Count || 0), 0);
+      const dates = sites.map(s => new Date(s.Updated)).filter(d => !isNaN(d));
+      const lastUpdate = dates.length ? new Date(Math.max(...dates)).toLocaleDateString() : "N/A";
+      document.getElementById('siteSummary').innerHTML = `<strong>Total Recordings:</strong> ${total}<br><strong>Last Update:</strong> ${lastUpdate}`;
+
+      new Chart(document.getElementById('allSitesChart'), {
+        type: 'bar',
+        data: {
+          labels: sites.map(s => s.Name),
+          datasets: [{ label: 'Recordings Count', data: sites.map(s => s.Recordings_Count), backgroundColor: '#3498db' }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+
+      const taxonCounts = {}, songTypes = {};
+      species.forEach(sp => {
+        if (sp.taxon) taxonCounts[sp.taxon] = (taxonCounts[sp.taxon] || 0) + 1;
+        if (sp.songtype) songTypes[sp.songtype] = (songTypes[sp.songtype] || 0) + 1;
+      });
+
+      new Chart(document.getElementById('taxonPieChart'), {
+        type: 'pie',
+        data: {
+          labels: Object.keys(taxonCounts),
+          datasets: [{ data: Object.values(taxonCounts), backgroundColor: ['#1abc9c','#e67e22','#9b59b6','#f39c12','#2ecc71'] }]
+        }
+      });
+
+      new Chart(document.getElementById('songTypeBarChart'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(songTypes),
+          datasets: [{ label: 'Count', data: Object.values(songTypes), backgroundColor: '#2ecc71' }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+
+      // Create network graph with proper data structure
+      const nodes = [];
+      const edges = [];
+      const taxonMap = {};
+      
+      // First pass: create taxon nodes
+      species.forEach(sp => {
+        if (sp.taxon && !taxonMap[sp.taxon]) {
+          nodes.push({
+            id: sp.taxon,
+            label: sp.taxon,
+            group: 'taxon',
+            shape: 'box',
+            color: {
+              background: '#e67e22',
+              border: '#d35400'
+            },
+            font: { size: 14 }
+          });
+          taxonMap[sp.taxon] = true;
+        }
+      });
+      
+      // Second pass: create species nodes and edges
+      species.forEach(sp => {
+        if (sp.taxon && sp.scientific_name) {
+          nodes.push({
+            id: sp.scientific_name,
+            label: sp.scientific_name,
+            group: 'species',
+            shape: 'ellipse',
+            color: {
+              background: '#3498db',
+              border: '#2980b9'
+            },
+            font: { size: 12 }
+          });
+          edges.push({
+            from: sp.taxon,
+            to: sp.scientific_name,
+            arrows: 'to'
+          });
+        }
+      });
+
+      // Create the network
+      const container = document.getElementById('networkGraph');
+      const data = {
+        nodes: nodes,
+        edges: edges
+      };
+      const options = {
+        nodes: {
+          borderWidth: 1,
+          shadow: true
+        },
+        edges: {
+          width: 1,
+          shadow: true,
+          smooth: {
+            type: 'continuous'
+          }
+        },
+        physics: {
+          barnesHut: {
+            gravitationalConstant: -2000,
+            centralGravity: 0.3,
+            springLength: 200,
+            springConstant: 0.04,
+            damping: 0.09,
+            avoidOverlap: 0.1
+          }
+        },
+        layout: {
+          improvedLayout: true
+        },
+        interaction: {
+          hover: true,
+          tooltipDelay: 200
+        }
+      };
+
+      const network = new vis.Network(container, data, options);
+      
+      // Add tooltip functionality
+      const tooltip = document.getElementById('networkTooltip');
+      
+      network.on("hoverNode", function(params) {
+        const nodeId = params.node;
+        const node = nodes.find(n => n.id === nodeId);
+        if (node) {
+          const speciesInfo = species.find(sp => 
+            sp.scientific_name === node.label || sp.taxon === node.label
+          );
+          if (speciesInfo) {
+            tooltip.innerHTML = `
+              <strong>${node.label}</strong><br>
+              ${speciesInfo.taxon ? `Taxon: ${speciesInfo.taxon}<br>` : ''}
+              ${speciesInfo.family ? `Family: ${speciesInfo.family}<br>` : ''}
+              ${speciesInfo.songtype ? `Song Type: ${speciesInfo.songtype}` : ''}
+            `;
+            tooltip.style.display = 'block';
+          }
+        }
+      });
+      
+      network.on("blurNode", function() {
+        tooltip.style.display = 'none';
+      });
+      
+      // Track mouse movement for tooltip
+      container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        tooltip.style.left = `${e.clientX - rect.left + 10}px`;
+        tooltip.style.top = `${e.clientY - rect.top + 10}px`;
+      });
+    }
+
+    Promise.all([
+      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/_templates.csv'),
+      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/sites-export.csv'),
+      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/species-export.csv')
+    ]).then(([templateData, sitesData, speciesData]) => {
+      renderSpeciesDashboard(templateData);
+      renderSiteDashboard(sitesData, speciesData);
+    }).catch(err => console.error('Error loading dashboard data:', err));
+  </script>
+</body>
+</html>

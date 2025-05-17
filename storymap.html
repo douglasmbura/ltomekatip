@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ltome-Katip StoryMap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <style>
+    body, html {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Menu Bar Styles */
+    #menu-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: #5b5b5b;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      box-sizing: border-box;
+      z-index: 1001;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #logo {
+      height: 40px;
+      margin-right: 15px;
+    }
+
+    #project-info {
+      flex-grow: 1;
+    }
+
+    #project-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    #project-subtitle {
+      font-size: 0.8rem;
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    #menu-items {
+      display: flex;
+      gap: 20px;
+    }
+
+    .menu-item {
+      color: white;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+
+    .menu-item:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    #container { 
+      display: flex; 
+      height: 100vh; 
+      padding-top: 60px; /* Account for menu bar */
+      box-sizing: border-box;
+    }
+    #map { width: 50%; height: 100%; position: relative; }
+    #story {
+      width: 50%;
+      height: 100%;
+      overflow-y: auto;
+      background: #f9f9f9;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+
+    .chapter {
+      margin-bottom: 3rem;
+      padding: 1rem;
+      border-left: 4px solid transparent;
+      transition: background 0.3s, border-color 0.3s;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .chapter.active {
+      border-color: #0078A8;
+      background: #e6f4f9;
+    }
+
+    .media-viewer img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 6px;
+    }
+
+    .nav-btn {
+      margin: 0.5rem;
+      padding: 6px 12px;
+      background: #0078A8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .audio-viewer, .media-viewer {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .audio-file-name {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* Highlighted marker style */
+    .highlighted-marker {
+      filter: hue-rotate(180deg) saturate(2);
+      transform: scale(1.2);
+      transition: all 0.3s;
+    }
+
+    /* Splash as map popup */
+    #splash {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    #splash h2 {
+      margin-top: 0;
+    }
+
+    #splash button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: #0078A8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #splash button:hover {
+      background: #005f85;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Menu Bar -->
+<div id="menu-bar">
+  <img id="logo" src="logo.png" alt="Project Logo">
+  <div id="project-info">
+    <h1 id="project-title">Ltome-Katip</h1>
+    <p id="project-subtitle">...</p>
+  </div>
+  <div id="menu-items">
+    <a href="storymap.html" class="menu-item">Storymap</a>
+    <a href="dashboard.html" class="menu-item">Dashboard</a>
+    <a href="index.html" class="menu-item">Main Map</a>
+  </div>
+</div>
+
+<div id="container">
+  <div id="map">
+    <div id="splash">
+      <h2>Welcome to the StoryMap</h2>
+      <p>A journey through stories with maps, images, and narration.</p>
+      <button onclick="startStory()">Start</button>
+    </div>
+  </div>
+  <div id="story"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+function startStory() {
+  document.getElementById('splash').style.display = 'none';
+}
+
+const map = L.map('map').setView([0, 0], 2);
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '© Esri'
+});
+L.control.layers({ "OSM": osm, "Esri Satellite": esri }).addTo(map);
+
+const storyContainer = document.getElementById('story');
+let chapterElements = [];
+let markers = []; // Store all markers for highlighting
+
+function createMediaViewer(prefix, container, type) {
+  let index = 1;
+  const sources = [];
+
+  function tryNext() {
+    const ext = type === 'photos' ? 'jpg' : 'wav'; // Changed to .wav for audio
+    const file = `${type}/` + prefix + `_${index}.${ext}`;
+    if (type === 'photos') {
+      const img = new Image();
+      img.src = file;
+      img.onload = () => { sources.push(file); index++; tryNext(); };
+      img.onerror = () => setupViewer();
+    } else {
+      fetch(file, { method: 'HEAD' }).then(res => {
+        if (res.ok) { sources.push(file); index++; tryNext(); }
+        else setupViewer();
+      });
+    }
+  }
+
+  function setupViewer() {
+    if (sources.length === 0) {
+      container.innerHTML = `<p><em>No ${type} found.</em></p>`;
+      return;
+    }
+
+    let current = 0;
+    if (type === 'photos') {
+      const img = document.createElement('img');
+      img.src = sources[current];
+      const viewer = document.createElement('div');
+      viewer.className = 'media-viewer';
+
+      const prev = button('Previous', () => { current = (current - 1 + sources.length) % sources.length; img.src = sources[current]; });
+      const next = button('Next', () => { current = (current + 1) % sources.length; img.src = sources[current]; });
+
+      viewer.appendChild(img); viewer.appendChild(prev); viewer.appendChild(next);
+      container.appendChild(viewer);
+    } else {
+      const audio = document.createElement('audio');
+      audio.src = sources[current];
+      audio.controls = true;
+
+      const fileNameDisplay = document.createElement('span');
+      fileNameDisplay.className = 'audio-file-name';
+      fileNameDisplay.textContent = sources[current].split('/').pop();
+
+      const viewer = document.createElement('div');
+      viewer.className = 'audio-viewer';
+
+      const prev = button('Previous', () => { 
+        current = (current - 1 + sources.length) % sources.length; 
+        audio.src = sources[current];
+        fileNameDisplay.textContent = sources[current].split('/').pop();
+        audio.play(); 
+      });
+      const next = button('Next', () => { 
+        current = (current + 1) % sources.length; 
+        audio.src = sources[current];
+        fileNameDisplay.textContent = sources[current].split('/').pop();
+        audio.play(); 
+      });
+
+      audio.addEventListener('play', () => {
+        fileNameDisplay.textContent = sources[current].split('/').pop();
+      });
+
+      viewer.appendChild(audio); 
+      viewer.appendChild(prev); 
+      viewer.appendChild(next);
+      viewer.appendChild(fileNameDisplay);
+      container.appendChild(viewer);
+    }
+  }
+
+  const button = (text, onClick) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn';
+    btn.textContent = text;
+    btn.onclick = onClick;
+    return btn;
+  }
+
+  tryNext();
+}
+
+function flyTo(lat, lon, zoom) {
+  map.flyTo([lat, lon], zoom, {
+    duration: 2,
+    animate: true
+  });
+}
+
+function highlightChapter(index) {
+  // Highlight the chapter in the story panel
+  chapterElements.forEach((el, i) => el.classList.toggle('active', i === index));
+  
+  // Highlight the corresponding marker
+  markers.forEach((marker, i) => {
+    if (i === index) {
+      marker._icon.classList.add('highlighted-marker');
+    } else {
+      marker._icon.classList.remove('highlighted-marker');
+    }
+  });
+}
+
+fetch('story.csv')
+  .then(res => res.text())
+  .then(csv => {
+    const data = Papa.parse(csv, { header: true }).data;
+
+    data.forEach((row, i) => {
+      const div = document.createElement('div');
+      div.className = 'chapter';
+      div.id = `chapter-${i}`;
+
+      const title = document.createElement('h2');
+      title.textContent = row['Chapter'];
+      div.appendChild(title);
+
+      const desc = document.createElement('p');
+      desc.textContent = row['Description'];
+      div.appendChild(desc);
+
+      // Media
+      const photoDiv = document.createElement('div');
+      div.appendChild(photoDiv);
+      createMediaViewer(`chapter${i + 1}`, photoDiv, 'photos');
+
+      const audioDiv = document.createElement('div');
+      div.appendChild(audioDiv);
+      createMediaViewer(`chapter${i + 1}`, audioDiv, 'audio');
+
+      storyContainer.appendChild(div);
+      chapterElements.push(div);
+
+      // Marker
+      const lat = parseFloat(row['Latitude']);
+      const lon = parseFloat(row['Longitude']);
+      const zoom = parseInt(row['Zoom']) || 10;
+
+      if (!isNaN(lat) && !isNaN(lon)) {
+        const marker = L.marker([lat, lon]).addTo(map).bindPopup(`<strong>${row['Chapter']}</strong>`);
+        markers.push(marker);
+        
+        // Click on marker to go to chapter
+        marker.on('click', () => {
+          div.scrollIntoView({ behavior: 'smooth' });
+          highlightChapter(i);
+        });
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            flyTo(lat, lon, zoom);
+            highlightChapter(i);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      observer.observe(div);
+    });
+
+    // Initial map focus
+    if (data.length > 0) {
+      const first = data[0];
+      const lat = parseFloat(first['Latitude']);
+      const lon = parseFloat(first['Longitude']);
+      const zoom = parseInt(first['Zoom']) || 10;
+      if (!isNaN(lat) && !isNaN(lon)) {
+        map.setView([lat, lon], zoom);
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
