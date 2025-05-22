@@ -10,62 +10,33 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/vis-network.min.css" />
   <style>
     body { font-family: sans-serif; background: #f9f9f9; margin: 0; }
-    header { 
-      background-color: #2c3e50; 
-      color: white; 
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .header-content {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    .nav-menu {
-      display: flex;
-      gap: 15px;
-    }
-    .nav-menu a {
-      color: white;
-      text-decoration: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      transition: background-color 0.3s;
-    }
-    .nav-menu a:hover {
-      background-color: #34495e;
-    }
+    header { background-color: #2c3e50; color: white; padding: 1rem;
+      display: flex; justify-content: space-between; align-items: center; }
+    .header-content { display: flex; align-items: center; gap: 20px; }
+    .nav-menu { display: flex; gap: 15px; }
+    .nav-menu a { color: white; text-decoration: none; padding: 5px 10px;
+      border-radius: 4px; transition: background-color 0.3s; }
+    .nav-menu a:hover { background-color: #34495e; }
     .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
-    .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; }
+    .card { background: white; border-radius: 10px; padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; }
     #map, #detectionMap, #networkGraph { height: 400px; width: 100%; }
     canvas { max-width: 100%; }
     .export-btns { margin-top: 10px; display: flex; gap: 10px; }
     .fullwidth { grid-column: span 2; }
-    button { padding: 6px 12px; border: none; background-color: #2c3e50; color: white; border-radius: 4px; cursor: pointer; }
+    button { padding: 6px 12px; border: none; background-color: #2c3e50; color: white;
+      border-radius: 4px; cursor: pointer; }
     button:hover { background-color: #34495e; }
-    .network-tooltip {
-      position: absolute;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      pointer-events: none;
-      z-index: 100;
-      display: none;
-    }
   </style>
 </head>
 <body>
   <header>
-    <div class="header-content">
-      <h1>Bioacoustic Data Dashboard</h1>
-    </div>
+    <div class="header-content"><h1>Bioacoustic Data Dashboard</h1></div>
     <div class="nav-menu">
       <a href="storymap.html">Storymap</a>
       <a href="dashboard.html">Dashboard</a>
@@ -73,399 +44,108 @@
     </div>
   </header>
   <div class="container">
-    <div class="card">
-      <h3>Sites Map</h3>
-      <div id="map"></div>
-    </div>
-    <div class="card">
-      <h3>Recordings per Site</h3>
-      <div class="summary" id="siteSummary"></div>
-      <canvas id="allSitesChart"></canvas>
-      <div class="export-btns">
-        <button onclick="exportChart('allSitesChart')">Export PNG</button>
-        <button onclick="exportPDF('allSitesChart')">Export PDF</button>
-      </div>
-    </div>
-    <div class="card">
-      <h3>Species Distribution by Taxon</h3>
-      <canvas id="taxonPieChart"></canvas>
-      <div class="export-btns">
-        <button onclick="exportChart('taxonPieChart')">Export PNG</button>
-        <button onclick="exportPDF('taxonPieChart')">Export PDF</button>
-      </div>
-    </div>
-    <div class="card">
+    <div class="card fullwidth">
       <h3>Taxon vs Scientific Name</h3>
       <div id="networkGraph"></div>
-      <div class="export-btns">
-        <button onclick="exportNetworkGraph()">Export PNG</button>
-      </div>
-      <div class="network-tooltip" id="networkTooltip"></div>
-    </div>
-    <div class="card">
-      <h3>Species Song Types</h3>
-      <canvas id="songTypeBarChart"></canvas>
-      <div class="export-btns">
-        <button onclick="exportChart('songTypeBarChart')">Export PNG</button>
-        <button onclick="exportPDF('songTypeBarChart')">Export PDF</button>
-      </div>
-    </div>
-    <div class="card fullwidth">
-      <h3>Detections by Species</h3>
-      <canvas id="speciesChart"></canvas>
-      <div class="export-btns">
-        <button onclick="exportChart('speciesChart')">Export PNG</button>
-        <button onclick="exportPDF('speciesChart')">Export PDF</button>
-      </div>
-    </div>
-    <div class="card fullwidth">
-      <h3>Detections Over Time</h3>
-      <canvas id="trendChart"></canvas>
-      <div class="export-btns">
-        <button onclick="exportChart('trendChart')">Export PNG</button>
-        <button onclick="exportPDF('trendChart')">Export PDF</button>
-      </div>
-    </div>
-    <div class="card fullwidth">
-      <h3>Detection by Location</h3>
-      <div id="detectionMap"></div>
-      <div class="export-btns">
-        <button onclick="exportMap('detectionMap')">Export PNG</button>
-      </div>
     </div>
   </div>
-
   <script>
-    // Initialize maps with ESRI satellite layer
-    const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-    });
-
-    const siteMap = L.map("map").setView([1.1145, 37.4690], 10);
-    const detectionMap = L.map("detectionMap").setView([1.1145, 37.4690], 10);
-    
-    // Add standard OSM layer to sites map
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(siteMap);
-    
-    // Add ESRI satellite layer to detection map
-    esriSatellite.addTo(detectionMap);
-
-    function exportChart(canvasId) {
-      html2canvas(document.getElementById(canvasId)).then(canvas => {
-        const link = document.createElement('a');
-        link.download = canvasId + '.png';
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
-    }
-
-    function exportPDF(canvasId) {
-      html2canvas(document.getElementById(canvasId)).then(canvas => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jspdf.jsPDF();
-        pdf.addImage(imgData, 'PNG', 10, 10, 180, 90);
-        pdf.save(canvasId + '.pdf');
-      });
-    }
-
-    function exportMap(divId) {
-      html2canvas(document.getElementById(divId)).then(canvas => {
-        const link = document.createElement('a');
-        link.download = divId + '.png';
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
-    }
-
-    function exportNetworkGraph() {
-      const container = document.getElementById('networkGraph');
-      html2canvas(container).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'network-graph.png';
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
-    }
-
-    function loadCSV(url) {
-      return new Promise((resolve, reject) => {
-        Papa.parse(url, {
-          download: true,
-          header: true,
-          complete: results => resolve(results.data.filter(row => Object.values(row).some(val => val !== ''))),
-          error: reject
-        });
-      });
-    }
-
-    function renderSpeciesDashboard(templateData, speciesData) {
-      const speciesCount = {}, dateCount = {};
-      templateData.forEach(row => {
-        const species = row.scientific_name || "Unknown";
-        speciesCount[species] = (speciesCount[species] || 0) + 1;
-        const date = row.recording_local_time?.split(' ')[0] || "Unknown";
-        dateCount[date] = (dateCount[date] || 0) + 1;
-
-        const lat = parseFloat(row.site_latitude);
-        const lng = parseFloat(row.site_longitude);
-        const site = row.site_name || 'Unknown';
-        if (!isNaN(lat) && !isNaN(lng)) {
-          L.circleMarker([lat, lng], {
-            radius: 5,
-            color: '#e74c3c', fillOpacity: 0.8,
-            fillColor: '#3498db'
-          }).addTo(detectionMap).bindPopup(`<b>Location:</b> ${site}<br><b>Species:</b> ${species}<br><b>Date:</b> ${date}`);
-        }
-      });
-      
-      // Create species chart
-      new Chart(document.getElementById('speciesChart'), {
-        type: 'bar',
-        data: {
-          labels: Object.keys(speciesCount),
-          datasets: [{ label: 'Detections', data: Object.values(speciesCount), backgroundColor: '#3498db' }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
-      
-      // Create trend chart
-      new Chart(document.getElementById('trendChart'), {
-        type: 'line',
-        data: {
-          labels: Object.keys(dateCount).sort(),
-          datasets: [{ label: 'Detections Over Time', data: Object.values(dateCount), borderColor: '#e74c3c', fill: false }]
-        },
-        options: { responsive: true }
-      });
-
-      // Create network graph with proper data structure
+    d3.csv("species-export.csv").then(function(data) {
       const nodes = [];
-      const edges = [];
-      const taxonMap = {};
-      const speciesMap = {};
-      const songTypeMap = {};
+      const links = [];
+      const nodeSet = new Set();
 
-      // First pass: create taxon nodes from species data
-      speciesData.forEach(sp => {
-        if (sp.taxon && !taxonMap[sp.taxon]) {
-          nodes.push({
-            id: sp.taxon,
-            label: sp.taxon,
-            group: 'taxon',
-            shape: 'box',
-            color: {
-              background: '#e67e22',
-              border: '#d35400'
-            },
-            font: { size: 14 },
-            title: `Taxon: ${sp.taxon}`
-          });
-          taxonMap[sp.taxon] = true;
+      data.forEach(d => {
+        const taxon = d["taxon"] || d["Taxon"] || d["TAXON"];
+        const sciName = d["scientific_name"] || d["Scientific Name"] || d["scientific name"];
+
+        if (taxon && sciName) {
+          nodeSet.add(taxon);
+          nodeSet.add(sciName);
+          links.push({ source: taxon, target: sciName });
         }
       });
 
-      // Second pass: create species nodes and connect to taxons
-      speciesData.forEach(sp => {
-        if (sp.scientific_name && !speciesMap[sp.scientific_name]) {
-          nodes.push({
-            id: sp.scientific_name,
-            label: sp.scientific_name,
-            group: 'species',
-            shape: 'ellipse',
-            color: {
-              background: '#3498db',
-              border: '#2980b9'
-            },
-            font: { size: 12 },
-            title: `Species: ${sp.scientific_name}<br>Family: ${sp.family || 'Unknown'}<br>Taxon: ${sp.taxon || 'Unknown'}`
-          });
-          speciesMap[sp.scientific_name] = true;
+      nodeSet.forEach(name => nodes.push({ id: name }));
 
-          // Connect species to its taxon
-          if (sp.taxon) {
-            edges.push({
-              from: sp.taxon,
-              to: sp.scientific_name,
-              arrows: 'to'
-            });
-          }
-        }
+      const width = 800;
+      const height = 600;
+
+      const svg = d3.select("#networkGraph")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(120))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+      const link = svg.append("g")
+        .selectAll("line")
+        .data(links)
+        .enter().append("line")
+        .attr("stroke", "#999")
+        .attr("stroke-width", 1.5);
+
+      const node = svg.append("g")
+        .selectAll("circle")
+        .data(nodes)
+        .enter().append("circle")
+        .attr("r", 8)
+        .attr("fill", "#1f77b4")
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+      const label = svg.append("g")
+        .selectAll("text")
+        .data(nodes)
+        .enter().append("text")
+        .text(d => d.id)
+        .attr("font-size", "10px")
+        .attr("dx", 12)
+        .attr("dy", ".35em");
+
+      simulation.on("tick", () => {
+        link
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+        node
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y);
+        label
+          .attr("x", d => d.x)
+          .attr("y", d => d.y);
       });
 
-      // Third pass: create song type nodes and connect to species
-      templateData.forEach(row => {
-        const songType = row.songtype || "Unknown";
-        const speciesName = row.scientific_name || "Unknown";
-        
-        // Only proceed if this species exists in our species data
-        if (speciesMap[speciesName] && !songTypeMap[songType]) {
-          nodes.push({
-            id: songType,
-            label: songType,
-            group: 'songtype',
-            shape: 'diamond',
-            color: {
-              background: '#2ecc71',
-              border: '#27ae60'
-            },
-            font: { size: 12 },
-            title: `Song Type: ${songType}`
-          });
-          songTypeMap[songType] = true;
-        }
+      function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
 
-        // Connect species to song type if both exist
-        if (speciesMap[speciesName] && songTypeMap[songType]) {
-          edges.push({
-            from: speciesName,
-            to: songType,
-            arrows: 'to'
-          });
-        }
-      });
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
 
-      // Create the network
-      const container = document.getElementById('networkGraph');
-      const networkData = {
-        nodes: nodes,
-        edges: edges
-      };
-      const options = {
-        nodes: {
-          borderWidth: 1,
-          shadow: true
-        },
-        edges: {
-          width: 1,
-          shadow: true,
-          smooth: {
-            type: 'continuous'
-          }
-        },
-        physics: {
-          barnesHut: {
-            gravitationalConstant: -2000,
-            centralGravity: 0.3,
-            springLength: 200,
-            springConstant: 0.04,
-            damping: 0.09,
-            avoidOverlap: 0.1
-          }
-        },
-        layout: {
-          improvedLayout: true
-        },
-        interaction: {
-          hover: true,
-          tooltipDelay: 200
-        },
-        groups: {
-          taxon: {
-            shape: 'box',
-            color: {
-              background: '#e67e22',
-              border: '#d35400'
-            }
-          },
-          species: {
-            shape: 'ellipse',
-            color: {
-              background: '#3498db',
-              border: '#2980b9'
-            }
-          },
-          songtype: {
-            shape: 'diamond',
-            color: {
-              background: '#2ecc71',
-              border: '#27ae60'
-            }
-          }
-        }
-      };
-
-      const network = new vis.Network(container, networkData, options);
-      
-      // Add tooltip functionality
-      const tooltip = document.getElementById('networkTooltip');
-      
-      network.on("hoverNode", function(params) {
-        const nodeId = params.node;
-        const node = nodes.find(n => n.id === nodeId);
-        if (node) {
-          tooltip.innerHTML = node.title || node.label;
-          tooltip.style.display = 'block';
-        }
-      });
-      
-      network.on("blurNode", function() {
-        tooltip.style.display = 'none';
-      });
-      
-      // Track mouse movement for tooltip
-      container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect();
-        tooltip.style.left = `${e.clientX - rect.left + 10}px`;
-        tooltip.style.top = `${e.clientY - rect.top + 10}px`;
-      });
-    }
-
-    function renderSiteDashboard(sites, species) {
-      sites.forEach(site => {
-        site.Latitude = parseFloat(site.Latitude);
-        site.Longitude = parseFloat(site.Longitude);
-        site.Recordings_Count = parseInt(site.Recordings_Count);
-        if (!isNaN(site.Latitude) && !isNaN(site.Longitude)) {
-          L.marker([site.Latitude, site.Longitude]).addTo(siteMap)
-            .bindPopup(`<b>${site.Name}</b><br>Recordings: ${site.Recordings_Count}`);
-        }
-      });
-      const total = sites.reduce((sum, s) => sum + (s.Recordings_Count || 0), 0);
-      const dates = sites.map(s => new Date(s.Updated)).filter(d => !isNaN(d));
-      const lastUpdate = dates.length ? new Date(Math.max(...dates)).toLocaleDateString() : "N/A";
-      document.getElementById('siteSummary').innerHTML = `<strong>Total Recordings:</strong> ${total}<br><strong>Last Update:</strong> ${lastUpdate}`;
-
-      new Chart(document.getElementById('allSitesChart'), {
-        type: 'bar',
-        data: {
-          labels: sites.map(s => s.Name),
-          datasets: [{ label: 'Recordings Count', data: sites.map(s => s.Recordings_Count), backgroundColor: '#3498db' }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
-
-      const taxonCounts = {}, songTypes = {};
-      species.forEach(sp => {
-        if (sp.taxon) taxonCounts[sp.taxon] = (taxonCounts[sp.taxon] || 0) + 1;
-        if (sp.songtype) songTypes[sp.songtype] = (songTypes[sp.songtype] || 0) + 1;
-      });
-
-      new Chart(document.getElementById('taxonPieChart'), {
-        type: 'pie',
-        data: {
-          labels: Object.keys(taxonCounts),
-          datasets: [{ data: Object.values(taxonCounts), backgroundColor: ['#1abc9c','#e67e22','#9b59b6','#f39c12','#2ecc71'] }]
-        }
-      });
-
-      new Chart(document.getElementById('songTypeBarChart'), {
-        type: 'bar',
-        data: {
-          labels: Object.keys(songTypes),
-          datasets: [{ label: 'Count', data: Object.values(songTypes), backgroundColor: '#2ecc71' }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
-    }
-
-    Promise.all([
-      loadCSV('_templates.csv'),
-      loadCSV('sites-export.csv'),
-      loadCSV('species-export.csv')
-    ]).then(([templateData, sitesData, speciesData]) => {
-      renderSpeciesDashboard(templateData, speciesData);
-      renderSiteDashboard(sitesData, speciesData);
-    }).catch(err => console.error('Error loading dashboard data:', err));
+      function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+    });
   </script>
 </body>
 </html>
+"""
+
+path = "/mnt/data/updated_dashboard.html"
+with open(path, "w") as f:
+    f.write(updated_html)
+
+path
