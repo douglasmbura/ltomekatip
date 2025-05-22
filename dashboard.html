@@ -198,9 +198,9 @@
       });
     }
 
-    function renderSpeciesDashboard(data) {
+    function renderSpeciesDashboard(templateData, speciesData) {
       const speciesCount = {}, dateCount = {};
-      data.forEach(row => {
+      templateData.forEach(row => {
         const species = row.scientific_name || "Unknown";
         speciesCount[species] = (speciesCount[species] || 0) + 1;
         const date = row.recording_local_time?.split(' ')[0] || "Unknown";
@@ -217,6 +217,8 @@
           }).addTo(detectionMap).bindPopup(`<b>Location:</b> ${site}<br><b>Species:</b> ${species}<br><b>Date:</b> ${date}`);
         }
       });
+      
+      // Create species chart
       new Chart(document.getElementById('speciesChart'), {
         type: 'bar',
         data: {
@@ -225,6 +227,8 @@
         },
         options: { responsive: true, plugins: { legend: { display: false } } }
       });
+      
+      // Create trend chart
       new Chart(document.getElementById('trendChart'), {
         type: 'line',
         data: {
@@ -232,6 +236,177 @@
           datasets: [{ label: 'Detections Over Time', data: Object.values(dateCount), borderColor: '#e74c3c', fill: false }]
         },
         options: { responsive: true }
+      });
+
+      // Create network graph with proper data structure
+      const nodes = [];
+      const edges = [];
+      const taxonMap = {};
+      const speciesMap = {};
+      const songTypeMap = {};
+
+      // First pass: create taxon nodes from species data
+      speciesData.forEach(sp => {
+        if (sp.taxon && !taxonMap[sp.taxon]) {
+          nodes.push({
+            id: sp.taxon,
+            label: sp.taxon,
+            group: 'taxon',
+            shape: 'box',
+            color: {
+              background: '#e67e22',
+              border: '#d35400'
+            },
+            font: { size: 14 },
+            title: `Taxon: ${sp.taxon}`
+          });
+          taxonMap[sp.taxon] = true;
+        }
+      });
+
+      // Second pass: create species nodes and connect to taxons
+      speciesData.forEach(sp => {
+        if (sp.scientific_name && !speciesMap[sp.scientific_name]) {
+          nodes.push({
+            id: sp.scientific_name,
+            label: sp.scientific_name,
+            group: 'species',
+            shape: 'ellipse',
+            color: {
+              background: '#3498db',
+              border: '#2980b9'
+            },
+            font: { size: 12 },
+            title: `Species: ${sp.scientific_name}<br>Family: ${sp.family || 'Unknown'}<br>Taxon: ${sp.taxon || 'Unknown'}`
+          });
+          speciesMap[sp.scientific_name] = true;
+
+          // Connect species to its taxon
+          if (sp.taxon) {
+            edges.push({
+              from: sp.taxon,
+              to: sp.scientific_name,
+              arrows: 'to'
+            });
+          }
+        }
+      });
+
+      // Third pass: create song type nodes and connect to species
+      templateData.forEach(row => {
+        const songType = row.songtype || "Unknown";
+        const speciesName = row.scientific_name || "Unknown";
+        
+        // Only proceed if this species exists in our species data
+        if (speciesMap[speciesName] && !songTypeMap[songType]) {
+          nodes.push({
+            id: songType,
+            label: songType,
+            group: 'songtype',
+            shape: 'diamond',
+            color: {
+              background: '#2ecc71',
+              border: '#27ae60'
+            },
+            font: { size: 12 },
+            title: `Song Type: ${songType}`
+          });
+          songTypeMap[songType] = true;
+        }
+
+        // Connect species to song type if both exist
+        if (speciesMap[speciesName] && songTypeMap[songType]) {
+          edges.push({
+            from: speciesName,
+            to: songType,
+            arrows: 'to'
+          });
+        }
+      });
+
+      // Create the network
+      const container = document.getElementById('networkGraph');
+      const networkData = {
+        nodes: nodes,
+        edges: edges
+      };
+      const options = {
+        nodes: {
+          borderWidth: 1,
+          shadow: true
+        },
+        edges: {
+          width: 1,
+          shadow: true,
+          smooth: {
+            type: 'continuous'
+          }
+        },
+        physics: {
+          barnesHut: {
+            gravitationalConstant: -2000,
+            centralGravity: 0.3,
+            springLength: 200,
+            springConstant: 0.04,
+            damping: 0.09,
+            avoidOverlap: 0.1
+          }
+        },
+        layout: {
+          improvedLayout: true
+        },
+        interaction: {
+          hover: true,
+          tooltipDelay: 200
+        },
+        groups: {
+          taxon: {
+            shape: 'box',
+            color: {
+              background: '#e67e22',
+              border: '#d35400'
+            }
+          },
+          species: {
+            shape: 'ellipse',
+            color: {
+              background: '#3498db',
+              border: '#2980b9'
+            }
+          },
+          songtype: {
+            shape: 'diamond',
+            color: {
+              background: '#2ecc71',
+              border: '#27ae60'
+            }
+          }
+        }
+      };
+
+      const network = new vis.Network(container, networkData, options);
+      
+      // Add tooltip functionality
+      const tooltip = document.getElementById('networkTooltip');
+      
+      network.on("hoverNode", function(params) {
+        const nodeId = params.node;
+        const node = nodes.find(n => n.id === nodeId);
+        if (node) {
+          tooltip.innerHTML = node.title || node.label;
+          tooltip.style.display = 'block';
+        }
+      });
+      
+      network.on("blurNode", function() {
+        tooltip.style.display = 'none';
+      });
+      
+      // Track mouse movement for tooltip
+      container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        tooltip.style.left = `${e.clientX - rect.left + 10}px`;
+        tooltip.style.top = `${e.clientY - rect.top + 10}px`;
       });
     }
 
@@ -281,131 +456,14 @@
         },
         options: { responsive: true, plugins: { legend: { display: false } } }
       });
-
-      // Create network graph with proper data structure
-      const nodes = [];
-      const edges = [];
-      const taxonMap = {};
-      
-      // First pass: create taxon nodes
-      species.forEach(sp => {
-        if (sp.taxon && !taxonMap[sp.taxon]) {
-          nodes.push({
-            id: sp.taxon,
-            label: sp.taxon,
-            group: 'taxon',
-            shape: 'box',
-            color: {
-              background: '#e67e22',
-              border: '#d35400'
-            },
-            font: { size: 14 }
-          });
-          taxonMap[sp.taxon] = true;
-        }
-      });
-      
-      // Second pass: create species nodes and edges
-      species.forEach(sp => {
-        if (sp.taxon && sp.scientific_name) {
-          nodes.push({
-            id: sp.scientific_name,
-            label: sp.scientific_name,
-            group: 'species',
-            shape: 'ellipse',
-            color: {
-              background: '#3498db',
-              border: '#2980b9'
-            },
-            font: { size: 12 }
-          });
-          edges.push({
-            from: sp.taxon,
-            to: sp.scientific_name,
-            arrows: 'to'
-          });
-        }
-      });
-
-      // Create the network
-      const container = document.getElementById('networkGraph');
-      const data = {
-        nodes: nodes,
-        edges: edges
-      };
-      const options = {
-        nodes: {
-          borderWidth: 1,
-          shadow: true
-        },
-        edges: {
-          width: 1,
-          shadow: true,
-          smooth: {
-            type: 'continuous'
-          }
-        },
-        physics: {
-          barnesHut: {
-            gravitationalConstant: -2000,
-            centralGravity: 0.3,
-            springLength: 200,
-            springConstant: 0.04,
-            damping: 0.09,
-            avoidOverlap: 0.1
-          }
-        },
-        layout: {
-          improvedLayout: true
-        },
-        interaction: {
-          hover: true,
-          tooltipDelay: 200
-        }
-      };
-
-      const network = new vis.Network(container, data, options);
-      
-      // Add tooltip functionality
-      const tooltip = document.getElementById('networkTooltip');
-      
-      network.on("hoverNode", function(params) {
-        const nodeId = params.node;
-        const node = nodes.find(n => n.id === nodeId);
-        if (node) {
-          const speciesInfo = species.find(sp => 
-            sp.scientific_name === node.label || sp.taxon === node.label
-          );
-          if (speciesInfo) {
-            tooltip.innerHTML = `
-              <strong>${node.label}</strong><br>
-              ${speciesInfo.taxon ? `Taxon: ${speciesInfo.taxon}<br>` : ''}
-              ${speciesInfo.family ? `Family: ${speciesInfo.family}<br>` : ''}
-              ${speciesInfo.songtype ? `Song Type: ${speciesInfo.songtype}` : ''}
-            `;
-            tooltip.style.display = 'block';
-          }
-        }
-      });
-      
-      network.on("blurNode", function() {
-        tooltip.style.display = 'none';
-      });
-      
-      // Track mouse movement for tooltip
-      container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect();
-        tooltip.style.left = `${e.clientX - rect.left + 10}px`;
-        tooltip.style.top = `${e.clientY - rect.top + 10}px`;
-      });
     }
 
     Promise.all([
-      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/_templates.csv'),
-      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/sites-export.csv'),
-      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/species-export.csv')
+      loadCSV('_templates.csv'),
+      loadCSV('sites-export.csv'),
+      loadCSV('species-export.csv')
     ]).then(([templateData, sitesData, speciesData]) => {
-      renderSpeciesDashboard(templateData);
+      renderSpeciesDashboard(templateData, speciesData);
       renderSiteDashboard(sitesData, speciesData);
     }).catch(err => console.error('Error loading dashboard data:', err));
   </script>
