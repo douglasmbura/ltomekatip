@@ -16,47 +16,190 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
   <style>
-    body { margin: 0; padding: 0; }
-    #map { position: absolute; top: 80px; bottom: 0; right: 0; left: 0; }
-    .popup-content img { max-width: 100px; display: block; margin: 0 auto; }
-    .navbar {
-      position: fixed; top: 0; left: 0; width: 100%; height: 50px;
-      background-color: #333; color: white; display: flex;
-      align-items: center; padding: 0 20px; z-index: 1000;
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2ecc71;
+      --accent-color: #e74c3c;
+      --dark-color: #2c3e50;
+      --light-color: #ecf0f1;
+      --text-color: #333;
+      --text-light: #7f8c8d;
+      --shadow: 0 4px 12px rgba(0,0,0,0.1);
+      --border-radius: 8px;
+      --transition: all 0.3s ease;
     }
-    .navbar img { height: 40px; margin-right: 10px; }
-    .navbar h1 { font-size: 18px; margin: 0; flex-grow: 1; }
-    .navbar a { color: #00bfff; text-decoration: none; margin-left: 20px; }
+    
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    #map { 
+      position: absolute; 
+      top: 80px; 
+      bottom: 0; 
+      right: 0; 
+      left: 0; 
+    }
+    
+    .popup-content img { 
+      max-width: 100px; 
+      display: block; 
+      margin: 0 auto; 
+    }
+    
+    /* Updated Navbar to match Dashboard */
+    header { 
+      background-color: var(--dark-color); 
+      color: white; 
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: 80px;
+      z-index: 1000;
+    }
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .header-content h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    
+    .header-content img {
+      height: 40px;
+    }
+    
+    .nav-menu {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .nav-menu a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .nav-menu a:hover {
+      background-color: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+    
+    .nav-menu a i {
+      font-size: 0.9rem;
+    }
 
     #weather-controls {
-      position: fixed; top: 50px; left: 10px; z-index: 1000;
-      background: white; padding: 8px; font-size: 13px;
+      position: fixed; 
+      top: 90px; 
+      left: 10px; 
+      z-index: 1000;
+      background: white; 
+      padding: 10px; 
+      font-size: 13px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
     }
 
     .legend {
       line-height: 18px;
       color: #555;
       background: white;
-      padding: 6px;
+      padding: 10px;
       font-size: 13px;
       position: fixed;
       bottom: 20px;
       left: 10px;
       z-index: 999;
-      border: 1px solid #ccc;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
     }
 
-    .waveform { width: 100%; height: 50px; background: #eee; margin-top: 10px; }
+    .waveform { 
+      width: 100%; 
+      height: 50px; 
+      background: #eee; 
+      margin-top: 10px; 
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2980b9;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+      }
+      
+      .header-content {
+        margin-bottom: 10px;
+      }
+      
+      .nav-menu {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      #map {
+        top: 140px;
+      }
+      
+      #weather-controls {
+        top: 150px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="navbar">
-    <img src="assets/logo.png" alt="Project Logo">
-    <h1>Ltome-Katip Project</h1>
-    <a href="storymap.html">Storymap</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="index.html">Main Map</a>
-  </div>
+  <header>
+    <div class="header-content">
+      <img src="assets/logo.png" alt="Project Logo">
+      <h1>Ltome-Katip Project</h1>
+    </div>
+    <div class="nav-menu">
+      <a href="storymap.html"><i class="fas fa-map-marked-alt"></i> Storymap</a>
+      <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="index.html" class="active"><i class="fas fa-globe-africa"></i> Main Map</a>
+    </div>
+  </header>
+  
   <div id="weather-controls">
     <label for="weather-date">Weather Date:</label>
     <input type="datetime-local" id="weather-date">
@@ -68,14 +211,14 @@
       <option value="clouds_new">Cloud Cover</option>
     </select>
     <button onclick="updateWeatherLayer()">Update Weather Layer</button>
-     <!-- NDVI and EVI Controls -->
-  <label for="veg-date">NDVI/EVI Date:</label>
-  <input type="date" id="veg-date" max="<?= (new Date()).toISOString().split('T')[0] ?>">
-  <select id="veg-type">
-    <option value="MODIS_Terra_NDVI_16Day">NDVI (16-day)</option>
-    <option value="MODIS_Terra_EVI_16Day">EVI (16-day)</option>
-  </select>
-  <button onclick="updateVegLayer()">Update Veg Layer</button>
+    <!-- NDVI and EVI Controls -->
+    <label for="veg-date">NDVI/EVI Date:</label>
+    <input type="date" id="veg-date" max="<?= (new Date()).toISOString().split('T')[0] ?>">
+    <select id="veg-type">
+      <option value="MODIS_Terra_NDVI_16Day">NDVI (16-day)</option>
+      <option value="MODIS_Terra_EVI_16Day">EVI (16-day)</option>
+    </select>
+    <button onclick="updateVegLayer()">Update Veg Layer</button>
   </div>
 
   <div id="map"></div>
@@ -149,8 +292,7 @@
     addGeoJSONLayer('namunyak.geojson', 'Namunyak Conservancy', { color: "orange", weight: 2, fillOpacity: 0.3 });
     addGeoJSONLayer('samburu_county.geojson', 'Samburu County', { color: "green", weight: 2, fillOpacity: 0.3 });
 
-    
-// DATA.CSV — make layer selectable
+    // DATA.CSV — make layer selectable
     var dataCsvLayer = L.layerGroup();
     $.get('./data.csv', function(csvString) {
       var data = Papa.parse(csvString, { header: true, dynamicTyping: true }).data;
@@ -199,36 +341,36 @@
       controlLayers.addOverlay(dataCsvLayer, "Audio Data (data.csv)");
     });
   
-var vegLayer;
-function updateVegLayer() {
-  var date = document.getElementById("veg-date").value;
-  var type = document.getElementById("veg-type").value;
-  if (!date) {
-    alert("Please select a vegetation date");
-    return;
-  }
+    var vegLayer;
+    function updateVegLayer() {
+      var date = document.getElementById("veg-date").value;
+      var type = document.getElementById("veg-type").value;
+      if (!date) {
+        alert("Please select a vegetation date");
+        return;
+      }
 
-  const year = new Date(date).getUTCFullYear();
-  const month = String(new Date(date).getUTCMonth() + 1).padStart(2, '0');
-  const day = String(new Date(date).getUTCDate()).padStart(2, '0');
-  const formattedDate = `${year}-${month}-${day}`;
+      const year = new Date(date).getUTCFullYear();
+      const month = String(new Date(date).getUTCMonth() + 1).padStart(2, '0');
+      const day = String(new Date(date).getUTCDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
 
-  const baseUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${type}/default/${formattedDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`;
+      const baseUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${type}/default/${formattedDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`;
 
-  if (vegLayer) {
-    map.removeLayer(vegLayer);
-    controlLayers.removeLayer(vegLayer);
-  }
+      if (vegLayer) {
+        map.removeLayer(vegLayer);
+        controlLayers.removeLayer(vegLayer);
+      }
 
-  vegLayer = L.tileLayer(baseUrl, {
-    attribution: 'NASA GIBS / MODIS',
-    opacity: 0.7
-  }).addTo(map);
+      vegLayer = L.tileLayer(baseUrl, {
+        attribution: 'NASA GIBS / MODIS',
+        opacity: 0.7
+      }).addTo(map);
 
-  controlLayers.addOverlay(vegLayer, `${type} on ${formattedDate}`);
-}
+      controlLayers.addOverlay(vegLayer, `${type} on ${formattedDate}`);
+    }
     
-// Camera Trap Images
+    // Camera Trap Images
     var cameraTrapLayer = L.layerGroup();
     $.get('./cameratraps.csv', function(csvString) {
       var parsed = Papa.parse(csvString, { header: true, dynamicTyping: true }).data;
@@ -274,19 +416,17 @@ function updateVegLayer() {
       });
     });
   </script>
-  <!-- NDVI/EVI Legend -->
-<div id="veg-legend" style="position: fixed; bottom: 10px; left: 10px; background: rgba(255,255,255,0.8); padding: 10px; font-size: 12px; z-index: 1000;">
-  <b>Vegetation Index (NDVI / EVI)</b><br>
-  <div style="display: flex; align-items: center;">
-    <div style="width: 120px; height: 10px; background: linear-gradient(to right, #654321, #ffcc00, #00ff00); margin-right: 10px;"></div>
-    <div style="display: flex; justify-content: space-between; width: 100px;">
-      <span>-1</span><span>0</span><span>+1</span>
-    </div>
-  </div>
-  <small>Brown = Low Vegetation<br>Green = Dense Vegetation</small>
-</div>
-
-
   
+  <!-- NDVI/EVI Legend -->
+  <div id="veg-legend" style="position: fixed; bottom: 10px; left: 10px; background: rgba(255,255,255,0.8); padding: 10px; font-size: 12px; z-index: 1000; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+    <b>Vegetation Index (NDVI / EVI)</b><br>
+    <div style="display: flex; align-items: center;">
+      <div style="width: 120px; height: 10px; background: linear-gradient(to right, #654321, #ffcc00, #00ff00); margin-right: 10px;"></div>
+      <div style="display: flex; justify-content: space-between; width: 100px;">
+        <span>-1</span><span>0</span><span>+1</span>
+      </div>
+    </div>
+    <small>Brown = Low Vegetation<br>Green = Dense Vegetation</small>
+  </div>
 </body>
 </html>
