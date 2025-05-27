@@ -129,21 +129,10 @@
       color: var(--primary-color);
     }
     
-    #map, #detectionMap { 
+    #map, #detectionMap, #networkGraph { 
       height: 100%; 
       width: 100%; 
       border-radius: var(--border-radius);
-    }
-    
-    /* Updated Network Graph Styles */
-    #networkGraph {
-      height: 100%;
-      width: 100%;
-      border-radius: var(--border-radius);
-      position: relative;
-      min-height: 400px;
-      border: 1px solid #eee;
-      background: white;
     }
     
     canvas { 
@@ -233,8 +222,6 @@
     
     .network-card {
       height: 450px;
-      display: flex;
-      flex-direction: column;
     }
     
     /* Summary cards */
@@ -331,7 +318,7 @@
   <header>
     <div class="header-content">
       <i class="fas fa-chart-line"></i>
-      <h1>Ltome-Katip Bioacoustic Dashboard</h1>
+      <h2>Ltome-Katip Bio-acaustic Dashboard</h>
     </div>
     <div class="nav-menu">
       <a href="storymap.html"><i class="fas fa-map-marked-alt"></i> Storymap</a>
@@ -883,23 +870,10 @@
           multiselect: true,
           navigationButtons: true,
           keyboard: true
-        },
-        width: '100%',
-        height: '100%',
-        autoResize: true
+        }
       };
 
-      // Ensure container is properly sized before initialization
-      container.style.width = '100%';
-      container.style.height = '100%';
-
       const network = new vis.Network(container, data, options);
-      
-      // Handle window resize
-      window.addEventListener('resize', function() {
-        network.redraw();
-        network.fit();
-      });
       
       // Add tooltip functionality
       const tooltip = document.getElementById('networkTooltip');
