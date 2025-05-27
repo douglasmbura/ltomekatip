@@ -5,73 +5,95 @@
   <title>Ltome-Katip StoryMap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2ecc71;
+      --accent-color: #e74c3c;
+      --dark-color: #2c3e50;
+      --light-color: #ecf0f1;
+      --text-color: #333;
+      --text-light: #7f8c8d;
+      --shadow: 0 4px 12px rgba(0,0,0,0.1);
+      --border-radius: 8px;
+      --transition: all 0.3s ease;
+    }
+    
     body, html {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       height: 100%;
       overflow: hidden;
+      color: var(--text-color);
     }
 
-    /* Menu Bar Styles */
-    #menu-bar {
+    /* Updated Menu Bar to match Dashboard */
+    header { 
+      background-color: var(--dark-color); 
+      color: white; 
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
       position: fixed;
       top: 0;
-      left: 0;
       width: 100%;
-      height: 60px;
-      background: #5b5b5b;
-      color: white;
+      height: 70px;
+      z-index: 1001;
+    }
+    
+    .header-content {
       display: flex;
       align-items: center;
-      padding: 0 20px;
-      box-sizing: border-box;
-      z-index: 1001;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    #logo {
-      height: 40px;
-      margin-right: 15px;
-    }
-
-    #project-info {
-      flex-grow: 1;
-    }
-
-    #project-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    #project-subtitle {
-      font-size: 0.8rem;
-      margin: 0;
-      opacity: 0.9;
-    }
-
-    #menu-items {
-      display: flex;
       gap: 20px;
     }
-
-    .menu-item {
+    
+    .header-content h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    
+    .header-content img {
+      height: 40px;
+    }
+    
+    .nav-menu {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .nav-menu a {
       color: white;
       text-decoration: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      transition: background 0.3s;
+      padding: 8px 15px;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .nav-menu a:hover {
+      background-color: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+    
+    .nav-menu a i {
+      font-size: 0.9rem;
     }
 
-    .menu-item:hover {
-      background: rgba(255,255,255,0.2);
+    .nav-menu a.active {
+      background-color: var(--primary-color);
     }
 
     #container { 
       display: flex; 
       height: 100vh; 
-      padding-top: 60px; /* Account for menu bar */
+      padding-top: 80px; /* Account for menu bar */
       box-sizing: border-box;
     }
     #map { width: 50%; height: 100%; position: relative; }
@@ -90,10 +112,11 @@
       border-left: 4px solid transparent;
       transition: background 0.3s, border-color 0.3s;
       background: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: var(--shadow);
+      border-radius: var(--border-radius);
     }
     .chapter.active {
-      border-color: #0078A8;
+      border-color: var(--primary-color);
       background: #e6f4f9;
     }
 
@@ -105,12 +128,17 @@
 
     .nav-btn {
       margin: 0.5rem;
-      padding: 6px 12px;
-      background: #0078A8;
+      padding: 8px 16px;
+      background: var(--primary-color);
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: var(--border-radius);
       cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .nav-btn:hover {
+      background: #2980b9;
     }
 
     .audio-viewer, .media-viewer {
@@ -122,7 +150,7 @@
       display: block;
       margin-top: 5px;
       font-size: 0.9rem;
-      color: #666;
+      color: var(--text-light);
     }
 
     /* Highlighted marker style */
@@ -141,48 +169,95 @@
       z-index: 1000;
       background: rgba(255,255,255,0.95);
       padding: 2rem;
-      border-radius: 10px;
+      border-radius: var(--border-radius);
       text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow);
     }
 
     #splash h2 {
       margin-top: 0;
+      color: var(--dark-color);
     }
 
     #splash button {
       margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
-      background: #0078A8;
+      padding: 0.8rem 1.6rem;
+      background: var(--primary-color);
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: var(--border-radius);
       font-size: 1rem;
       cursor: pointer;
+      transition: var(--transition);
     }
 
     #splash button:hover {
-      background: #005f85;
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2980b9;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+      }
+      
+      .header-content {
+        margin-bottom: 10px;
+      }
+      
+      .nav-menu {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      #container {
+        flex-direction: column;
+        padding-top: 140px;
+      }
+      
+      #map, #story {
+        width: 100%;
+        height: 50%;
+      }
     }
   </style>
 </head>
 <body>
 
-<!-- Menu Bar -->
-<div id="menu-bar">
-  <img id="logo" src="logo.png" alt="Project Logo">
-  <div id="project-info">
-    <h1 id="project-title">Ltome-Katip</h1>
-    <p id="project-subtitle">...</p>
+<!-- Updated Menu Bar -->
+<header>
+  <div class="header-content">
+    <img src="logo.png" alt="Project Logo">
+    <h1>Ltome-Katip Project</h1>
   </div>
-  <div id="menu-items">
-    <div class="nav-menu">
+  <div class="nav-menu">
     <a href="storymap.html" class="active"><i class="fas fa-map-marked-alt"></i> Storymap</a>
     <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
     <a href="index.html"><i class="fas fa-globe-africa"></i> Main Map</a>
   </div>
-  </div>
-</div>
+</header>
 
 <div id="container">
   <div id="map">
