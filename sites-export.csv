@@ -1,22 +1,22 @@
 Id,Name,Latitude,Longitude,Altitude,Timezone,Recordings_Count,Deployed,Updated
 58714,Elephant Rock 4 - New Site,1.1145,37.469,840.8,Africa/Nairobi,6255,no data,2024-07-31 13:21:26
 60587,Football Field Resting Place,1.1123,37.4604,836.2,Africa/Nairobi,52,no data,2024-07-31 14:01:58
-60582,Lawa,1.1185,37.456,841.8,Africa/Nairobi,444,no data,2024-07-31 13:57:54
-60581,Lawa2,1.1184,37.4568,841.8,Africa/Nairobi,19978,no data,2024-07-31 13:57:09
+60582,Lawa,1.1185,37.456,841.8,Africa/Nairobi,542,no data,2024-07-31 13:57:54
+60581,Lawa2,1.1184,37.4568,841.8,Africa/Nairobi,29981,no data,2024-07-31 13:57:09
 60583,Lawa4,1.1201,37.4575,864.6,Africa/Nairobi,4993,no data,2024-07-31 13:58:41
 58718,Lchura,1.11244,37.474062,798.5,Africa/Nairobi,5666,no data,2024-07-07 09:00:42
 60602,Lesiteti,1.12133,37.46534,,Africa/Nairobi,4570,no data,2024-07-31 14:16:18
-65389,Lmurgusiani (Lturoto),1.0214,37.4019,845.6,Africa/Nairobi,9543,no data,2024-10-21 17:05:17
+65389,Lmurgusiani (Lturoto),1.0214,37.4019,845.6,Africa/Nairobi,19573,no data,2024-10-21 17:05:17
 58721,Ltepes Corridor,1.11357,37.46995,805.1,Africa/Nairobi,6327,no data,2024-07-07 09:09:55
 58720,Ltepes Corridor 2,1.11613,37.46782,802.5,Africa/Nairobi,24607,no data,2024-07-31 14:07:53
 60577,Ltorot Lolgiria,1.1151,37.4648,841.8,Africa/Nairobi,3540,no data,2024-07-31 13:52:12
-60578,Ltorot Lolgiria 2,1.1135,37.4649,841.8,Africa/Nairobi,15569,no data,2024-07-31 13:52:58
+60578,Ltorot Lolgiria 2,1.1135,37.4649,841.8,Africa/Nairobi,23332,no data,2024-07-31 13:52:58
 60580,Nelmasuuti 1,1.1177,37.4655,841.8,Africa/Nairobi,3475,no data,2024-07-31 13:55:22
 60579,Nelmasuuti 2,1.1172,37.4659,841.8,Africa/Nairobi,4279,no data,2024-07-31 13:53:50
 60570,Nelmasuuti 3,1.1173,37.4669,841.8,Africa/Nairobi,2758,no data,2024-07-31 13:12:06
 60572,Nelmasuuti 5,1.1164,37.4691,806.2,Africa/Nairobi,5625,no data,2024-07-31 13:24:19
-60595,Nelmasuuti 6,1.1168,37.4677,800.8,Africa/Nairobi,7269,no data,2024-07-31 14:06:51
-60590,Nkapune Rock Cave,1.1055,37.4599,809.7,Africa/Nairobi,21113,no data,2024-07-31 14:03:54
+60595,Nelmasuuti 6,1.1168,37.4677,800.8,Africa/Nairobi,7403,no data,2024-07-31 14:06:51
+60590,Nkapune Rock Cave,1.1055,37.4599,809.7,Africa/Nairobi,30727,no data,2024-07-31 14:03:54
 65388,Nkongu,1.0142,37.4037,,Africa/Nairobi,21594,no data,2024-10-21 16:56:36
 60571,Nkutoto,1.1177,37.47,841.8,Africa/Nairobi,6518,no data,2024-07-31 13:23:26
 65158,Nkutoto Elmasuuti 3,1.12,37.46805,,Africa/Nairobi,0,no data,2024-10-14 15:55:09
@@ -24,17 +24,17 @@ Id,Name,Latitude,Longitude,Altitude,Timezone,Recordings_Count,Deployed,Updated
 65159,Quarantine,1.11567,37.46021,,Africa/Nairobi,1094,no data,2024-10-14 15:56:42
 58719,Release Corridor 2,1.1143675,37.47596158,812.54,Africa/Nairobi,5752,no data,2024-07-07 09:03:15
 58722,Releasing Pan,1.1189824,37.4706278,841.8,Africa/Nairobi,9970,no data,2024-07-31 13:10:56
-58710,Reteti House - New water point,1.1126819,37.454303,0,Africa/Nairobi,33975,no data,2024-07-07 09:34:57
+58710,Reteti House - New water point,1.1126819,37.454303,0,Africa/Nairobi,43603,no data,2024-07-07 09:34:57
 60593,Reteti House Lawai Resting,1.111,37.4543,852.8,Africa/Nairobi,16837,no data,2024-07-31 14:05:57
-60592,Reteti House Road Corridor,1.1071,37.4568,831.3,Africa/Nairobi,8202,no data,2024-07-31 14:04:47
+60592,Reteti House Road Corridor,1.1071,37.4568,831.3,Africa/Nairobi,17823,no data,2024-07-31 14:04:47
 60588,Reteti Old Road,1.1118,37.4613,826.7,Africa/Nairobi,351,no data,2024-07-31 14:02:55
-58712,Safaricom Rock,1.11851,37.46338,854.2,Africa/Nairobi,29484,no data,2024-07-07 09:04:39
+58712,Safaricom Rock,1.11851,37.46338,854.2,Africa/Nairobi,29502,no data,2024-07-07 09:04:39
 60573,Safaricom Rock 2,1.1159,37.4647,841.8,Africa/Nairobi,16896,no data,2024-07-31 13:26:51
-69974,sarara main camp,,0.111646,,UTC,18391,no data,2025-03-19 09:59:13
+69974,sarara main camp,,0.111646,,UTC,28013,no data,2025-03-19 09:59:13
 65237,Sarara Naado,1.0581,37.4077,845.6,Africa/Nairobi,4819,no data,2024-10-17 11:22:37
 65520,Singing Wells 1,1.0437548,37.4095797,857.21,Africa/Nairobi,2689,no data,2024-10-29 23:16:39
-65387,Singing Wells 2,1.0444,37.4089,845.8,Africa/Nairobi,21931,no data,2024-10-21 16:34:45
+65387,Singing Wells 2,1.0444,37.4089,845.8,Africa/Nairobi,31072,no data,2024-10-21 16:34:45
 60584,Soito Naarok,1.1203,37.4588,868.1,Africa/Nairobi,3283,no data,2024-07-31 13:59:24
 60585,Soito Naarok Waterpoint,1.1199,37.46,841.8,Africa/Nairobi,4375,no data,2024-07-31 14:01:16
 60603,Stables,1.1147,37.460833,,Africa/Nairobi,2686,no data,2024-07-31 14:17:03
-69249,Tree House,0.9958217,37.4072075,998,Africa/Nairobi,4685,no data,2025-03-06 14:06:52
+69249,Tree House,0.9958217,37.4072075,998,Africa/Nairobi,13028,no data,2025-03-06 14:06:52
