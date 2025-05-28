@@ -910,9 +910,9 @@
     }
 
     Promise.all([
-      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/_templates.csv'),
-      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/sites-export.csv'),
-      loadCSV('https://raw.githubusercontent.com/douglasmbura/dashboard/main/species-export.csv')
+      loadCSV('https://raw.githubusercontent.com/douglasmbura/ltomekatip/main/_templates.csv'),
+      loadCSV('https://raw.githubusercontent.com/douglasmbura/ltomekatip/main/sites-export.csv'),
+      loadCSV('https://raw.githubusercontent.com/douglasmbura/ltomekatip/main/species-export.csv')
     ]).then(([templateData, sitesData, speciesData]) => {
       renderSpeciesDashboard(templateData);
       renderSiteDashboard(sitesData, speciesData);
