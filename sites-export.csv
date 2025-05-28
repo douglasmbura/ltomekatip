@@ -19,7 +19,7 @@ Id,Name,Latitude,Longitude,Altitude,Timezone,Recordings_Count,Deployed,Updated
 60590,Nkapune Rock Cave,1.1055,37.4599,809.7,Africa/Nairobi,30727,no data,2024-07-31 14:03:54
 65388,Nkongu,1.0142,37.4037,,Africa/Nairobi,21594,no data,2024-10-21 16:56:36
 60571,Nkutoto,1.1177,37.47,841.8,Africa/Nairobi,6518,no data,2024-07-31 13:23:26
-65158,Nkutoto Elmasuuti 3,1.12,37.46805,,Africa/Nairobi,10000,no data,2024-10-14 15:55:09
+65158,Nkutoto Elmasuuti 3,1.12,37.46805,,Africa/Nairobi,0,no data,2024-10-14 15:55:09
 60597,Nkutoto Elmasuuti 4,1.12104,37.46904,,Africa/Nairobi,3180,no data,2024-07-31 14:08:36
 65159,Quarantine,1.11567,37.46021,,Africa/Nairobi,1094,no data,2024-10-14 15:56:42
 58719,Release Corridor 2,1.1143675,37.47596158,812.54,Africa/Nairobi,5752,no data,2024-07-07 09:03:15
