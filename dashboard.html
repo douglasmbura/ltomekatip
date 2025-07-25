@@ -919,7 +919,7 @@
     Promise.all([
       loadCSV('https://raw.githubusercontent.com/douglasmbura/ltomekatip/main/_templates.csv'),
       loadCSV('https://raw.githubusercontent.com/douglasmbura/ltomekatip/main/sites-export.csv'),
-      loadCSV('https://raw.githubusercontent.com/douglas/ltomekatip/main/species-export.csv')
+      loadCSV('https://raw.githubusercontent.com/douglasmbura/ltomekatip/main/species-export.csv')
     ]).then(([templateData, sitesData, speciesData]) => {
       renderSpeciesDashboard(templateData);
       renderSiteDashboard(sitesData, speciesData);
